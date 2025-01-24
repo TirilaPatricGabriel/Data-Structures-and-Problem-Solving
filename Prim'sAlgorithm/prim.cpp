@@ -3,33 +3,43 @@
 #include <vector>
 #include <unordered_set>
 #include <string>
+#include <queue>
 
 using namespace std;
+
+class Comparator {
+public:
+    bool operator()(const pair<char, pair<char, int>>& p1, const pair<char, pair<char, int>>& p2) {
+        return p1.second.second > p2.second.second;
+    }
+};
 
 class Solution {
     unordered_map<char, vector<pair<char, int>>> adjacency_list;
     unordered_set<char> visited;
     vector<pair<char, pair<char, int>>> res;
+    priority_queue<pair<char, pair<char, int>>, vector<pair<char, pair<char, int>>>, Comparator> edges_pq;
 public:
     Solution(unordered_map<char, vector<pair<char, int>>> adjacency_list, unordered_set<char> visited) :
     adjacency_list(adjacency_list), visited(visited) {}
 
     void prim (char node) {
         this->visited.insert(node);
-        int min = INT_MAX;
-        pair<char, pair<char, int>> next_best_edge = {'0', {'0', INT_MAX}};
-        for (char visited_node : this->visited) {
-            for (const auto& pair : adjacency_list[visited_node]) {
-                if (this->visited.find(pair.first) == this->visited.end() && min > pair.second) {
-                    min = pair.second;
-                    next_best_edge = {visited_node, {pair.first, pair.second}};
-                }
-            }
+
+        for (const auto edge : this->adjacency_list[node]) {
+            this->edges_pq.emplace(make_pair(node, make_pair(edge.first, edge.second)));
         }
-        char nextNode = next_best_edge.second.first;
-        if (nextNode != '0'){
+        pair<char, pair<char, int>> next_best_edge = this->edges_pq.top();
+        this->edges_pq.pop();
+
+        while (this->visited.find(next_best_edge.second.first) != this->visited.end() && !this->edges_pq.empty()) {
+            next_best_edge = this->edges_pq.top();
+            this->edges_pq.pop();
+        }
+
+        if (this->visited.find(next_best_edge.second.first) == this->visited.end()){
             this->res.push_back(next_best_edge);
-            this->prim(nextNode);
+            this->prim(next_best_edge.second.first);
         }
     }
 
