@@ -1,8 +1,9 @@
 #include <iostream>
 #include <vector>
-#include <string>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <string>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ class Solution {
     vector<vector<int>> capacity;
     unordered_map<char, vector<Edge>> adjacency_list;
 public:
-    Solution(vector<vector<int>>& capacity) : capacity(capacity) {}
+    Solution(vector<vector<int>> capacity) : capacity(capacity) {}
 
     char getNodeKey (int n) {
         switch (n) {
@@ -59,69 +60,50 @@ public:
         }
     }
 
-
-    void updateResidualEdge (char node1, char node2, int flow_to_add) {
-        if (this->adjacency_list.find(node1) == this->adjacency_list.end()) {
-            Edge residual_edge(node2, 0, -flow_to_add);
-            this->adjacency_list[node1] = {residual_edge};
-        } else {
-            for (auto& residual_edge : this->adjacency_list[node1]) {
-                if (residual_edge.node == node2) {
-                    residual_edge.flow = residual_edge.flow - flow_to_add;
-                    break;
-                }
-            }
+    void updatePath (unordered_map<char, char>& parent, int flow) {
+        char child = 'T';
+        while (parent[child] == 'S') {
         }
     }
 
-    int dfs(char node, int bottle_neck, unordered_set<char>& visited) {
-        if (visited.find(node) != visited.end()) {
-            return 0;
-        }
-        if (node == 'T') {
-            return bottle_neck;
-        }
-
-        visited.emplace(node);
-
-        for (auto& edge : this->adjacency_list[node]) {
-            int residual_capacity = edge.capacity - edge.flow;
-
-            if (residual_capacity > 0 && visited.find(edge.node) == visited.end()) {
-                int new_bottleneck = min(bottle_neck, residual_capacity);
-                int flow_to_add = dfs(edge.node, new_bottleneck, visited);
-
-                if (flow_to_add > 0) {
-                    edge.flow += flow_to_add;
-                    this->updateResidualEdge(edge.node, node, flow_to_add);
-                    return flow_to_add;
-                }
-            }
-        }
-        return 0;
-    }
-
-
-    void FordFulkerson() {
-        int max_flow = 0;
-
+    void EdmondsKarp() {
         while (true) {
-            unordered_set<char> visited;
-            int flow_to_add = this->dfs('S', INT_MAX, visited);
+            queue<pair<char, int>> nodesQ;
+            unordered_map<char, char> parent;
+            nodesQ.emplace(make_pair('S', INT_MAX));
+            int maximum_flow_found = 0;
 
-            if (flow_to_add == 0) {
-                break;
+            while (!nodesQ.empty()) {
+                pair<char, int> current = nodesQ.front();
+                char currentNode = current.first;
+                int value = current.second;
+                nodesQ.pop();
+
+                if (currentNode == 'T') {
+                    maximum_flow_found = value;
+                    this->updatePath(parent, maximum_flow_found);
+                    continue;
+                }
+
+                for(auto& edge : this->adjacency_list[currentNode]) {
+                    parent[edge.node] = currentNode;
+
+                    int residual_cap = edge.capacity - edge.flow;
+                    if (value > residual_cap) {
+                        value = residual_cap;
+                    }
+
+                    nodesQ.emplace(make_pair(edge.node, value));
+                }
             }
 
-            max_flow += flow_to_add;
+            if (maximum_flow_found == 0) break;
         }
-
-        cout<<"Maximum Flow: "<<max_flow<<endl;
     }
 
-    void solution () {
+    void solution() {
         this->createAdjacencyList();
-        this->FordFulkerson();
+        this->EdmondsKarp();
     }
 };
 
