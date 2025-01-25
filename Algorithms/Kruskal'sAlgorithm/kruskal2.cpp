@@ -14,7 +14,7 @@ struct Edge {
     Edge(int node1, int node2, int weight) : node1(node1), node2(node2), weight(weight) {};
     bool operator==(const Edge& other) const {
         return (node1 == other.node1 && node2 == other.node2 && weight == other.weight) ||
-               (node1 == other.node2 && node2 == other.node1 && weight == other.weight); // Undirected graph
+               (node1 == other.node2 && node2 == other.node1 && weight == other.weight);
     }
 };
 
