@@ -109,9 +109,9 @@ int main () {
             {'G', {{'F', 9}}}
     };
 
-    Solution* sol = new Solution(adjacency_list);
+    Solution sol(adjacency_list);
 
-    vector<pair<char, pair<char, int>>> res = sol->solution();
+    vector<pair<char, pair<char, int>>> res = sol.solution();
 
     for (const auto& edge : res) {
         char first_node = edge.first;

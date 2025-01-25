@@ -66,8 +66,8 @@ int main () {
             'A', 'B', 'C', 'D', 'E'
     };
 
-    Solution* sol = new Solution(adjacency_list, node_distances, nodes);
-    unordered_map<char, int> res = sol->start(nodes[0]);
+    Solution sol(adjacency_list, node_distances, nodes);
+    unordered_map<char, int> res = sol.start(nodes[0]);
 
     for (const auto& pair : res) {
         cout<<pair.first<<" "<<pair.second<<endl;
