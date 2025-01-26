@@ -2,68 +2,76 @@
 
 using namespace std;
 
+// Merge two sorted arrays
 int* merge(int array1[], int array2[], int size1, int size2) {
-    int* array3 = new int[size1+size2];
+    int* array3 = new int[size1 + size2];
 
-    int i = 0, j = 0;
+    int i = 0, j = 0, k = 0;
 
     while (i < size1 && j < size2) {
         if (array1[i] < array2[j]) {
-            array3[i+j] = array1[i];
-            i+=1;
+            array3[k++] = array1[i++];
         } else {
-            array3[i+j] = array2[j];
-            j+=1;
+            array3[k++] = array2[j++];
         }
     }
 
-    while (i<size1) {
-        array3[i+j] = array1[i];
-        i++;
+    while (i < size1) {
+        array3[k++] = array1[i++];
     }
-    while(j<size2) {
-        array3[i+j] = array2[j];
-        j++;
+    while (j < size2) {
+        array3[k++] = array2[j++];
     }
 
     return array3;
 }
 
-int* mergeSort (int array[], int size) {
+int* mergeSort(int array[], int size) {
     if (size == 1) {
-        return array;
+        int* singleElement = new int[1];
+        singleElement[0] = array[0];
+        return singleElement;
     }
-    int left = 0, right = size-1, middle = (left+right)/2;
 
-    int nrElementsLeft, nrElementsRight = size/2;
-    if (size%2) {
-        nrElementsLeft = size/2 + 1;
-    } else {
-        nrElementsLeft = size/2;
+    int nrElementsLeft = (size + 1) / 2;
+    int nrElementsRight = size / 2;
+
+    int* leftarr = new int[nrElementsLeft];
+    int* rightarr = new int[nrElementsRight];
+
+    for (int i = 0; i < nrElementsLeft; i++) {
+        leftarr[i] = array[i];
     }
-    int leftarr[nrElementsLeft], rightarr[size/2];
-
-    for(int i=0; i<size; i++) {
-        if (i < nrElementsLeft) {
-            leftarr[i] = array[i];
-        } else {
-            rightarr[i-nrElementsLeft] = array[i];
-        }
+    for (int i = 0; i < nrElementsRight; i++) {
+        rightarr[i] = array[nrElementsLeft + i];
     }
 
     int* newLeftArr = mergeSort(leftarr, nrElementsLeft);
     int* newRightArr = mergeSort(rightarr, nrElementsRight);
 
-    return merge(newLeftArr, newRightArr, nrElementsLeft, nrElementsRight);
+    int* sortedArray = merge(newLeftArr, newRightArr, nrElementsLeft, nrElementsRight);
+
+    delete[] leftarr;
+    delete[] rightarr;
+    delete[] newLeftArr;
+    delete[] newRightArr;
+
+    return sortedArray;
 }
 
-int main () {
+int main() {
     int arr[] = {5, 4, 3, 2, 1};
     int size = sizeof(arr) / sizeof(arr[0]);
+
     int* resArr = mergeSort(arr, size);
 
-    for (int i=0; i<size; i++) {
-        cout<<resArr[i]<<" ";
+    cout << "Sorted Array: ";
+    for (int i = 0; i < size; i++) {
+        cout << resArr[i] << " ";
     }
+    cout << endl;
+
     delete[] resArr;
+
+    return 0;
 }
