@@ -8,102 +8,102 @@
 using namespace std;
 
 struct Edge {
-    char node;
-    int capacity, flow;
-
-    Edge(char node, int capacity, int flow) : node(node), capacity(capacity), flow(flow) {}
+    int node, capacity, flow;
+    Edge(int node, int capacity, int flow) : node(node), capacity(capacity), flow(flow) {}
 };
 
 class Solution {
-    vector<vector<int>> capacity;
-    unordered_map<char, vector<Edge>> adjacency_list;
+    unordered_map<int, vector<Edge>> list;
+    int size;
 public:
-    Solution(vector<vector<int>> capacity) : capacity(capacity) {}
-
-    char getNodeKey (int n) {
-        switch (n) {
-            case 0:
-                return 'S';
-            case 1:
-                return 'A';
-            case 2:
-                return 'B';
-            case 3:
-                return 'C';
-            case 4:
-                return 'D';
-            case 5:
-                return 'T';
-        }
-    }
-
-    void createAdjacencyList() {
-        for (int i = 0; i < this->capacity.size(); i++) {
-            char node1 = this->getNodeKey(i);
-            for (int j = 0; j < this->capacity[i].size(); j++) {
-                if (i != j) {
-                    char node2 = this->getNodeKey(j);
-                    Edge new_edge(node2, this->capacity[i][j], 0);
-                    Edge reverse_edge(node1, 0, 0);
-                    if (this->adjacency_list.find(node1) == this->adjacency_list.end()) {
-                        this->adjacency_list[node1] = {new_edge};
+    void createAdjacencyList (vector<vector<int>>& capacity) {
+        this->size = capacity.size();
+        for (int i=0; i<capacity.size(); i++) {
+            for (int j=0; j<capacity[i].size(); j++) {
+                if (i != j && capacity[i][j] > 0) {
+                    Edge newEdge(j, capacity[i][j], 0);
+                    Edge residualEdge(i, 0, 0);
+                    if (this->list.find(i) == this->list.end()) {
+                        this->list[i] = {newEdge};
                     } else {
-                        this->adjacency_list[node1].push_back(new_edge);
+                        this->list[i].push_back(newEdge);
                     }
-                    if (this->adjacency_list.find(node2) == this->adjacency_list.end()) {
-                        this->adjacency_list[node2] = {reverse_edge};
+
+                    if (this->list.find(j) == this->list.end()) {
+                        this->list[j] = {residualEdge};
                     } else {
-                        this->adjacency_list[node2].push_back(reverse_edge);
+                        this->list[j].push_back(residualEdge);
                     }
                 }
             }
         }
     }
 
-    void updatePath (unordered_map<char, char>& parent, int flow) {
-        char child = 'T';
-        while (parent[child] == 'S') {
-        }
-    }
+    int EdmondsKarp () {
 
-    void EdmondsKarp() {
+        int max_flow = 0;
         while (true) {
-            queue<pair<char, int>> nodesQ;
-            unordered_map<char, char> parent;
-            nodesQ.emplace(make_pair('S', INT_MAX));
-            int maximum_flow_found = 0;
+            int flow = 0;
 
-            while (!nodesQ.empty()) {
-                pair<char, int> current = nodesQ.front();
-                char currentNode = current.first;
-                int value = current.second;
-                nodesQ.pop();
+            vector<int> parent(this->size, -1);
+            unordered_set<int> visited;
 
-                if (currentNode == 'T') {
-                    maximum_flow_found = value;
-                    this->updatePath(parent, maximum_flow_found);
-                    continue;
+            queue<pair<int, int>> q;
+            q.emplace(0, INT_MAX);
+            while (!q.empty()) {
+                int node = q.front().first;
+                int bottleneck = q.front().second;
+                q.pop();
+                visited.emplace(node);
+
+                if (node == this->size-1) {
+                    flow = bottleneck;
+                    break;
                 }
 
-                for(auto& edge : this->adjacency_list[currentNode]) {
-                    parent[edge.node] = currentNode;
-
-                    int residual_cap = edge.capacity - edge.flow;
-                    if (value > residual_cap) {
-                        value = residual_cap;
+                for (const Edge& edge : this->list[node]) {
+                    int residual_capacity = edge.capacity - edge.flow;
+                    if (residual_capacity > 0 && visited.find(edge.node) == visited.end()) {
+                        if (bottleneck > residual_capacity) {
+                            bottleneck = residual_capacity;
+                        }
+                        parent[edge.node] = node;
+                        q.emplace(edge.node, bottleneck);
                     }
-
-                    nodesQ.emplace(make_pair(edge.node, value));
                 }
             }
 
-            if (maximum_flow_found == 0) break;
+            // augmenting paths
+
+            int node = this->size-1;
+            int p = parent[node];
+            while (p != -1) {
+                for (Edge& edge : this->list[p]) {
+                    if (edge.node == node) {
+                        edge.flow += flow;
+                    }
+                }
+
+                for (Edge& edge : this->list[node]) {
+                    if (edge.node == p) {
+                        edge.flow -= flow;
+                    }
+                }
+
+                node = p;
+                p = parent[node];
+            }
+
+            max_flow += flow;
+            if (flow == 0) break;
         }
+
+        return max_flow;
     }
 
-    void solution() {
-        this->createAdjacencyList();
-        this->EdmondsKarp();
+    int solution (vector<vector<int>>& capacity) {
+        this->createAdjacencyList(capacity);
+        return this->EdmondsKarp();
     }
 };
 
@@ -117,6 +117,6 @@ int main () {
             {0, 0, 0, 0, 0, 0}
     };
 
-    Solution sol(capacity);
-    sol.solution();
+    Solution sol;
+    cout<<sol.solution(capacity);
 }
