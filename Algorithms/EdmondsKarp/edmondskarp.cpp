@@ -8,8 +8,8 @@
 using namespace std;
 
 struct Edge {
-    int node, capacity, flow;
-    Edge(int node, int capacity, int flow) : node(node), capacity(capacity), flow(flow) {}
+    int node, capacity, flow, reverseIndex;
+    Edge(int node, int capacity, int flow, int reverseIndex) : node(node), capacity(capacity), flow(flow), reverseIndex(reverseIndex) {}
 };
 
 class Solution {
@@ -21,8 +21,8 @@ public:
         for (int i=0; i<capacity.size(); i++) {
             for (int j=0; j<capacity[i].size(); j++) {
                 if (i != j && capacity[i][j] > 0) {
-                    Edge newEdge(j, capacity[i][j], 0);
-                    Edge residualEdge(i, 0, 0);
+                    Edge newEdge(j, capacity[i][j], 0, this->list[j].size());
+                    Edge residualEdge(i, 0, 0, this->list[i].size());
                     if (this->list.find(i) == this->list.end()) {
                         this->list[i] = {newEdge};
                     } else {
@@ -81,12 +81,7 @@ public:
                 for (Edge& edge : this->list[p]) {
                     if (edge.node == node) {
                         edge.flow += flow;
-                    }
-                }
-
-                for (Edge& edge : this->list[node]) {
-                    if (edge.node == p) {
-                        edge.flow -= flow;
+                        this->list[node][edge.reverseIndex].flow -= flow;
                     }
                 }
 
