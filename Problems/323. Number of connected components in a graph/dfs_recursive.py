@@ -18,12 +18,11 @@ class Solution:
                     dfs(n)
 
         count = 0
-        for n in range(n):
-            if n not in seen:
-                dfs(n)
+        for k in range(n):
+            if k not in seen:
+                dfs(k)
                 count+=1
 
-        print(count)
         return count
 
 if __name__ == "__main__":
